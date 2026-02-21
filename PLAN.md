@@ -124,3 +124,42 @@ All screens built using **frontend-design skill** guidelines — distinctive typ
 4. Results page: loading animation plays, 3 video cards appear, download buttons work
 5. Character page (revisit): previously saved character appears as selectable card
 6. Direct URL navigation to `/results` without `characterId` → redirects to `/`
+
+---
+
+## Iteration 1: UI Feedback Fixes
+
+4 targeted changes based on screenshot review.
+
+### 1. Bigger character cards + delete button
+**File**: `ui/components/CharacterCard.tsx`
+- Avatar: `h-16 w-16` → `h-24 w-24`
+- Card padding: `p-6` → `p-8`
+- Name text: `text-sm` → `text-base`
+- Add delete (X) button in card top-right corner, new `onDelete` prop
+
+### 2. Bigger "Create New" button
+**File**: `ui/app/character/page.tsx`
+- Button sizing: `px-6 py-3 text-sm` → `px-8 py-4 text-base`
+- Wire up `onDelete` to `CharacterCard`, call `deleteCharacter`, refresh list
+
+### 3. Modal: avatar moved to top-right, bigger
+**File**: `ui/components/CharacterModal.tsx`
+- Top of modal becomes flex row: title left, avatar upload right
+- Avatar: `h-20 w-20` → `h-24 w-24`
+- Remove separate "Avatar" label (position is self-evident)
+
+### 4. Homepage: add nav to character page
+**File**: `ui/app/page.tsx`
+- Secondary link below upload button: "or browse your characters →" → `/character`
+
+### 5. Add `deleteCharacter` to storage
+**File**: `ui/lib/storage.ts`
+- `deleteCharacter(id: string)` — filter out by id and re-save
+
+### Verification
+1. `npm run build` passes
+2. Homepage shows link to `/character`
+3. Character cards visually larger with working delete button
+4. Modal has avatar top-right next to title
+5. Deleting a character removes it from the grid

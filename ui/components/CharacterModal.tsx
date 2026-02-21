@@ -9,14 +9,15 @@ import VoiceSamplePicker from "./VoiceSamplePicker";
 interface CharacterModalProps {
   onSave: (character: Character) => void;
   onClose: () => void;
+  character?: Character;
 }
 
-export default function CharacterModal({ onSave, onClose }: CharacterModalProps) {
-  const [nickname, setNickname] = useState("");
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [voiceWeight, setVoiceWeight] = useState(50);
-  const [personality, setPersonality] = useState<Character["personality"]>("funny");
-  const [voiceSample, setVoiceSample] = useState("smooth");
+export default function CharacterModal({ onSave, onClose, character }: CharacterModalProps) {
+  const [nickname, setNickname] = useState(character?.nickname ?? "");
+  const [imageUrl, setImageUrl] = useState<string | null>(character?.imageUrl ?? null);
+  const [voiceWeight, setVoiceWeight] = useState(character?.voiceWeight ?? 50);
+  const [personality, setPersonality] = useState<Character["personality"]>(character?.personality ?? "funny");
+  const [voiceSample, setVoiceSample] = useState(character?.voiceSample ?? "smooth");
   const fileRef = useRef<HTMLInputElement>(null);
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -30,13 +31,13 @@ export default function CharacterModal({ onSave, onClose }: CharacterModalProps)
   function handleSave() {
     if (!nickname.trim()) return;
     onSave({
-      id: crypto.randomUUID(),
+      id: character?.id ?? crypto.randomUUID(),
       nickname: nickname.trim(),
       imageUrl,
       voiceWeight,
       personality,
       voiceSample,
-      createdAt: Date.now(),
+      createdAt: character?.createdAt ?? Date.now(),
     });
   }
 
@@ -48,7 +49,29 @@ export default function CharacterModal({ onSave, onClose }: CharacterModalProps)
       }}
     >
       <div className="animate-slide-up w-full max-w-lg rounded-[20px] bg-bg p-8 shadow-2xl">
-        <h2 className="font-display text-2xl font-bold">New Character</h2>
+        <div className="flex items-start justify-between">
+          <h2 className="font-display text-2xl font-bold">{character ? "Edit Character" : "New Character"}</h2>
+          <div>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-card-border transition-colors hover:border-accent"
+            >
+              {imageUrl ? (
+                <img src={imageUrl} alt="Avatar" className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-2xl text-muted">+</span>
+              )}
+            </button>
+          </div>
+        </div>
 
         <div className="mt-6 space-y-6">
           {/* nickname */}
@@ -63,31 +86,6 @@ export default function CharacterModal({ onSave, onClose }: CharacterModalProps)
               placeholder="e.g. Captain Sarcasm"
               className="w-full rounded-xl border border-card-border bg-card-bg px-4 py-3 text-sm outline-none transition-colors placeholder:text-muted/50 focus:border-accent"
             />
-          </div>
-
-          {/* image upload */}
-          <div>
-            <label className="mb-2 block font-display text-sm font-semibold">
-              Avatar
-            </label>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageUpload}
-            />
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-card-border transition-colors hover:border-accent"
-            >
-              {imageUrl ? (
-                <img src={imageUrl} alt="Avatar" className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-2xl text-muted">+</span>
-              )}
-            </button>
           </div>
 
           <VoiceSlider value={voiceWeight} onChange={setVoiceWeight} />

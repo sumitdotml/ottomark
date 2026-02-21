@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import HeroSection from "@/components/HeroSection";
 import UploadButton from "@/components/UploadButton";
 
@@ -43,6 +44,13 @@ export default function Home() {
           >
             <UploadButton onUpload={handleUpload} />
           </div>
+          <Link
+            href="/character"
+            className="animate-fade-up mt-4 font-display text-sm text-muted transition-colors hover:text-accent"
+            style={{ animationDelay: "0.45s" }}
+          >
+            or browse your characters →
+          </Link>
         </div>
       </div>
     </div>

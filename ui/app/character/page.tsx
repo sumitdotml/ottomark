@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Character } from "@/lib/types";
-import { getCharacters, saveCharacter } from "@/lib/storage";
+import { getCharacters, saveCharacter, deleteCharacter } from "@/lib/storage";
 import CharacterCard from "@/components/CharacterCard";
 import CharacterModal from "@/components/CharacterModal";
 
@@ -12,6 +12,7 @@ export default function CharacterPage() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
 
   useEffect(() => {
     const saved = getCharacters();
@@ -24,6 +25,12 @@ export default function CharacterPage() {
     setCharacters(getCharacters());
     setSelectedId(character.id);
     setShowModal(false);
+  }
+
+  function handleDelete(id: string) {
+    deleteCharacter(id);
+    setCharacters(getCharacters());
+    if (selectedId === id) setSelectedId(null);
   }
 
   function handleGenerate() {
@@ -53,7 +60,12 @@ export default function CharacterPage() {
                 key={c.id}
                 character={c}
                 selected={selectedId === c.id}
-                onClick={() => setSelectedId(c.id)}
+                onClick={() => {
+                  setSelectedId(c.id);
+                  setEditingCharacter(c);
+                  setShowModal(true);
+                }}
+                onDelete={handleDelete}
               />
             ))}
           </div>
@@ -64,8 +76,11 @@ export default function CharacterPage() {
           style={{ animationDelay: "0.2s" }}
         >
           <button
-            onClick={() => setShowModal(true)}
-            className="rounded-xl border border-card-border px-6 py-3 font-display text-sm font-medium transition-colors hover:border-fg hover:text-fg"
+            onClick={() => {
+              setEditingCharacter(null);
+              setShowModal(true);
+            }}
+            className="rounded-xl border border-card-border px-8 py-4 font-display text-base font-medium transition-colors hover:border-fg hover:text-fg"
           >
             + Create New
           </button>
@@ -82,9 +97,11 @@ export default function CharacterPage() {
 
       {showModal && (
         <CharacterModal
+          character={editingCharacter ?? undefined}
           onSave={handleSaveCharacter}
           onClose={() => {
             setShowModal(false);
+            setEditingCharacter(null);
           }}
         />
       )}
