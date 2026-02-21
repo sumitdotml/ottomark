@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getCharacterById } from "@/lib/storage";
-import { PLACEHOLDER_VIDEOS } from "@/lib/constants";
+import { GENERATION_STEPS, generateCommentary } from "@/lib/api";
+import { GenerationStep, VideoResult } from "@/lib/types";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import VideoCard from "@/components/VideoCard";
 
@@ -13,6 +14,19 @@ function ResultsContent() {
   const characterId = searchParams.get("characterId");
   const [loading, setLoading] = useState(true);
   const [characterName, setCharacterName] = useState("");
+  const [steps, setSteps] = useState<GenerationStep[]>(
+    () => GENERATION_STEPS.map((s) => ({ ...s }))
+  );
+  const [videos, setVideos] = useState<VideoResult[]>([]);
+
+  const onStepChange = useCallback(
+    (stepId: string, status: "in_progress" | "completed") => {
+      setSteps((prev) =>
+        prev.map((s) => (s.id === stepId ? { ...s, status } : s))
+      );
+    },
+    []
+  );
 
   useEffect(() => {
     if (!characterId) {
@@ -23,11 +37,23 @@ function ResultsContent() {
     if (character) {
       setCharacterName(character.nickname);
     }
-    const timer = setTimeout(() => setLoading(false), 3000);
-    return () => clearTimeout(timer);
-  }, [characterId, router]);
 
-  if (loading) return <LoadingOverlay />;
+    let cancelled = false;
+
+    generateCommentary({ characterId, onStepChange }).then(async (result) => {
+      if (cancelled) return;
+      setVideos(result);
+      // brief pause so user sees the final checkmark
+      await new Promise((r) => setTimeout(r, 600));
+      if (!cancelled) setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [characterId, router, onStepChange]);
+
+  if (loading) return <LoadingOverlay steps={steps} />;
 
   return (
     <div className="flex min-h-screen flex-col items-center px-6 py-20">
@@ -42,7 +68,7 @@ function ResultsContent() {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {PLACEHOLDER_VIDEOS.map((video, i) => (
+          {videos.map((video, i) => (
             <VideoCard key={video.id} video={video} index={i} />
           ))}
         </div>
