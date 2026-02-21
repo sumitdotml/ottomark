@@ -22,3 +22,8 @@ export function saveCharacter(character: Character): void {
 export function getCharacterById(id: string): Character | undefined {
   return getCharacters().find((c) => c.id === id);
 }
+
+export function deleteCharacter(id: string): void {
+  const remaining = getCharacters().filter((c) => c.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(remaining));
+}
