@@ -34,6 +34,8 @@ async function main() {
       contents: [{
          parts: [{
             text: 'Say with a sense of urgency: Download GAMENAME now, or else!'
+            // TODO: Add "tones" here
+            // TODO: Add script here
          }],
       }],
       config: {
