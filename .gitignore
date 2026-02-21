@@ -8,6 +8,8 @@
 .agents
 .agents/
 
+.claude
+
 __pycache__
 __pycache__/
 
