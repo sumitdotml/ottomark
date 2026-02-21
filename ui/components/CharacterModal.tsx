@@ -23,9 +23,20 @@ export default function CharacterModal({ onSave, onClose, character }: Character
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setImageUrl(reader.result as string);
-    reader.readAsDataURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 128;
+      canvas.height = 128;
+      const ctx = canvas.getContext("2d")!;
+      const size = Math.min(img.width, img.height);
+      const sx = (img.width - size) / 2;
+      const sy = (img.height - size) / 2;
+      ctx.drawImage(img, sx, sy, size, size, 0, 0, 128, 128);
+      setImageUrl(canvas.toDataURL("image/jpeg", 0.7));
+      URL.revokeObjectURL(img.src);
+    };
+    img.src = URL.createObjectURL(file);
   }
 
   function handleSave() {
