@@ -4,6 +4,8 @@ import 'dotenv/config';
 import fs from 'fs';
 import {execSync} from 'child_process';
 
+const voice="Algenib";
+
 async function saveWaveFile(
    filename: string,
    pcmData: Buffer,
@@ -32,7 +34,7 @@ async function main() {
    });
 
    // Load script-sample.srt into a data structure
-   const srtContent = fs.readFileSync('script-sample.srt', 'utf-8');
+   const srtContent = fs.readFileSync('script-sample-2.srt', 'utf-8');
    
    // Parse SRT format: sequence number, timestamp, text
    interface ScriptEntry {
@@ -77,7 +79,7 @@ async function main() {
             responseModalities: ['AUDIO'],
             speechConfig: {
                voiceConfig: {
-                  prebuiltVoiceConfig: { voiceName: 'Kore' },
+                  prebuiltVoiceConfig: { voiceName: voice },
                   // TODO: use internally mapped voice name for the character here.
                },
             },
