@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Character } from "@/lib/types";
 import { getCharacters, saveCharacter, deleteCharacter } from "@/lib/storage";
+import { hasGeneratedResults, clearGenerationCache } from "@/lib/api";
 import CharacterCard from "@/components/CharacterCard";
 import CharacterModal from "@/components/CharacterModal";
 
@@ -33,8 +34,16 @@ export default function CharacterPage() {
     if (selectedId === id) setSelectedId(null);
   }
 
+  const selectedHasResults = selectedId ? hasGeneratedResults(selectedId) : false;
+
   function handleGenerate() {
     if (!selectedId) return;
+    router.push(`/results?characterId=${selectedId}`);
+  }
+
+  function handleRegenerate() {
+    if (!selectedId) return;
+    clearGenerationCache(selectedId);
     router.push(`/results?characterId=${selectedId}`);
   }
 
@@ -71,6 +80,7 @@ export default function CharacterPage() {
               key={c.id}
               character={c}
               selected={selectedId === c.id}
+              generated={hasGeneratedResults(c.id)}
               onClick={() => {
                 if (selectedId === c.id) {
                   setEditingCharacter(c);
@@ -84,18 +94,38 @@ export default function CharacterPage() {
           ))}
         </div>
 
-        <button
-          onClick={handleGenerate}
-          disabled={!selectedId}
-          className={`animate-fade-up mt-8 w-full rounded-xl py-4 font-display text-base font-semibold transition-all ${
-            selectedId
-              ? "bg-accent text-white hover:-translate-y-0.5 hover:bg-accent-hover"
-              : "cursor-not-allowed bg-card-border text-muted"
-          }`}
-          style={{ animationDelay: "0.2s" }}
-        >
-          {selectedId ? "Generate Videos →" : "Select a character to continue"}
-        </button>
+        {selectedId && selectedHasResults ? (
+          <div
+            className="animate-fade-up mt-8 flex gap-3"
+            style={{ animationDelay: "0.2s" }}
+          >
+            <button
+              onClick={handleGenerate}
+              className="flex-1 rounded-xl bg-accent py-4 font-display text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-accent-hover"
+            >
+              View Results
+            </button>
+            <button
+              onClick={handleRegenerate}
+              className="flex-1 rounded-xl bg-accent/12 py-4 font-display text-base font-medium text-accent transition-all hover:-translate-y-0.5 hover:bg-accent/20"
+            >
+              Regenerate
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleGenerate}
+            disabled={!selectedId}
+            className={`animate-fade-up mt-8 w-full rounded-xl py-4 font-display text-base font-semibold transition-all ${
+              selectedId
+                ? "bg-accent text-white hover:-translate-y-0.5 hover:bg-accent-hover"
+                : "cursor-not-allowed bg-card-border text-muted"
+            }`}
+            style={{ animationDelay: "0.2s" }}
+          >
+            {selectedId ? "Generate Videos →" : "Select a character to continue"}
+          </button>
+        )}
       </div>
 
       {showModal && (
