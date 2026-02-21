@@ -100,3 +100,21 @@ body::before {
 .animate-slide-up {
   animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+@keyframes ring-spin {
+  to { --ring-angle: 360deg; }
+}
+
+@property --ring-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.generated-ring {
+  background: conic-gradient(
+    from var(--ring-angle),
+    #E8553D, #D44A34, #C97B2A, #E8553D
+  );
+  animation: ring-spin 3s linear infinite;
+}

@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getCharacterById } from "@/lib/storage";
-import { GENERATION_STEPS, generateCommentary } from "@/lib/api";
+import { GENERATION_STEPS, generateCommentary, getGenerationCache } from "@/lib/api";
 import { GenerationStep, VideoResult } from "@/lib/types";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import VideoCard from "@/components/VideoCard";
@@ -42,6 +42,14 @@ function ResultsContent() {
     }
     setCharacterName(character.nickname);
 
+    const cached = getGenerationCache(characterId);
+    if (cached) {
+      setVideos(cached.videos);
+      setGeneratedScript(cached.script);
+      setLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     generateCommentary({ characterId, character, onStepChange })
@@ -49,7 +57,6 @@ function ResultsContent() {
         if (cancelled) return;
         setVideos(result);
         setGeneratedScript(sessionStorage.getItem("gamevoice-last-script") ?? "");
-        // brief pause so user sees the final checkmark
         await new Promise((r) => setTimeout(r, 600));
         if (!cancelled) setLoading(false);
       })
@@ -104,11 +111,11 @@ function ResultsContent() {
             {characterName ? `${characterName}'s` : "Your"} Commentary
           </h1>
           <p className="mt-3 text-lg text-muted">
-            3 AI-generated commentary videos, ready to watch.
+            3 AI-generated commentary samples, ready to watch.
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-6 sm:flex-row">
           {videos.map((video, i) => (
             <VideoCard key={video.id} video={video} index={i} />
           ))}
