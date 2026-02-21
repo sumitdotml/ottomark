@@ -14,6 +14,8 @@ function ResultsContent() {
   const characterId = searchParams.get("characterId");
   const [loading, setLoading] = useState(true);
   const [characterName, setCharacterName] = useState("");
+  const [generatedScript, setGeneratedScript] = useState("");
+  const [generationError, setGenerationError] = useState<string | null>(null);
   const [steps, setSteps] = useState<GenerationStep[]>(
     () => GENERATION_STEPS.map((s) => ({ ...s }))
   );
@@ -34,19 +36,32 @@ function ResultsContent() {
       return;
     }
     const character = getCharacterById(characterId);
-    if (character) {
-      setCharacterName(character.nickname);
+    if (!character) {
+      router.replace("/character");
+      return;
     }
+    setCharacterName(character.nickname);
 
     let cancelled = false;
 
-    generateCommentary({ characterId, onStepChange }).then(async (result) => {
-      if (cancelled) return;
-      setVideos(result);
-      // brief pause so user sees the final checkmark
-      await new Promise((r) => setTimeout(r, 600));
-      if (!cancelled) setLoading(false);
-    });
+    generateCommentary({ characterId, character, onStepChange })
+      .then(async (result) => {
+        if (cancelled) return;
+        setVideos(result);
+        setGeneratedScript(sessionStorage.getItem("gamevoice-last-script") ?? "");
+        // brief pause so user sees the final checkmark
+        await new Promise((r) => setTimeout(r, 600));
+        if (!cancelled) setLoading(false);
+      })
+      .catch((error: unknown) => {
+        console.error("Commentary generation failed", error);
+        if (!cancelled) {
+          const message =
+            error instanceof Error ? error.message : "Failed to generate commentary.";
+          setGenerationError(message);
+          setLoading(false);
+        }
+      });
 
     return () => {
       cancelled = true;
@@ -54,6 +69,32 @@ function ResultsContent() {
   }, [characterId, router, onStepChange]);
 
   if (loading) return <LoadingOverlay steps={steps} />;
+  if (generationError) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center px-6">
+        <div className="w-full max-w-2xl rounded-2xl border border-card-border bg-card p-8">
+          <h1 className="font-display text-3xl font-800 tracking-tight">Generation Failed</h1>
+          <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-muted">
+            {generationError}
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="rounded-xl bg-accent px-6 py-3 font-display text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-accent-hover"
+            >
+              Retry
+            </button>
+            <button
+              onClick={() => router.push("/character")}
+              className="rounded-xl border border-card-border px-6 py-3 font-display text-sm font-medium transition-all hover:-translate-y-0.5 hover:border-fg hover:text-fg"
+            >
+              Back to Characters
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center px-6 py-20">
@@ -72,6 +113,17 @@ function ResultsContent() {
             <VideoCard key={video.id} video={video} index={i} />
           ))}
         </div>
+
+        {generatedScript ? (
+          <div className="animate-fade-up mt-10 rounded-2xl border border-card-border bg-card p-6">
+            <h2 className="font-display text-xl font-semibold tracking-tight">
+              Generated Script (Temporary)
+            </h2>
+            <pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap rounded-xl bg-bg p-4 text-xs leading-relaxed text-muted">
+              {generatedScript}
+            </pre>
+          </div>
+        ) : null}
 
         <div
           className="animate-fade-up mt-14 flex flex-wrap gap-4"

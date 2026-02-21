@@ -64,3 +64,45 @@ Use this exact shape for new entries.
 - evidence:
   - file:ui/components/CharacterModal.tsx:28
   - file:ui/lib/storage.ts:19
+
+### MISTAKE-20260221-002
+- id: MISTAKE-20260221-002
+- status: active
+- severity: medium
+- scope_tags: [code, typescript]
+- pattern: function parameter declared in type but not destructured before use, causing undefined identifier compile failure
+- prevention_rule: when destructured object params are typed inline, include every referenced property in the destructuring list
+- validation_check: run TypeScript/Next build and ensure no TS2304 "Cannot find name" in edited files
+- first_seen: 2026-02-21
+- last_seen: 2026-02-21
+- occurrence_count: 1
+- evidence:
+  - file:ui/lib/api.ts:98
+
+### MISTAKE-20260221-003
+- id: MISTAKE-20260221-003
+- status: active
+- severity: medium
+- scope_tags: [code, ux, error-handling]
+- pattern: hard redirect on async generation failure hides backend error details from user
+- prevention_rule: on API failures in step-based flows, surface error message in-place and provide retry/back actions instead of forced navigation
+- validation_check: trigger script API failure and confirm results page shows error text without redirecting
+- first_seen: 2026-02-21
+- last_seen: 2026-02-21
+- occurrence_count: 1
+- evidence:
+  - file:ui/app/results/page.tsx:53
+
+### MISTAKE-20260221-004
+- id: MISTAKE-20260221-004
+- status: active
+- severity: medium
+- scope_tags: [code, javascript, regex]
+- pattern: using Python-style inline regex flags like (?m) in JavaScript RegExp causes runtime invalid group errors
+- prevention_rule: when porting regex across languages, use JS RegExp flags argument (e.g. new RegExp(pattern, "m")) instead of inline flag groups
+- validation_check: run script generation path and verify no "Invalid regular expression ... Invalid group" errors
+- first_seen: 2026-02-21
+- last_seen: 2026-02-21
+- occurrence_count: 1
+- evidence:
+  - file:ui/lib/server/gemini.ts:137

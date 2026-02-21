@@ -3,7 +3,7 @@
 import { useRef } from "react";
 
 interface UploadButtonProps {
-  onUpload: (file: File) => void;
+  onUpload: (file: File) => Promise<void> | void;
 }
 
 export default function UploadButton({ onUpload }: UploadButtonProps) {
@@ -18,7 +18,9 @@ export default function UploadButton({ onUpload }: UploadButtonProps) {
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) onUpload(file);
+          if (file) {
+            void onUpload(file);
+          }
         }}
       />
       <button

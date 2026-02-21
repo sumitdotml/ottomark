@@ -4,14 +4,19 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import HeroSection from "@/components/HeroSection";
 import UploadButton from "@/components/UploadButton";
+import { uploadGameplay } from "@/lib/api";
 
 export default function Home() {
   const router = useRouter();
 
-  function handleUpload(file: File) {
-    // storing flag so character page knows a video was uploaded
-    sessionStorage.setItem("gamevoice-uploaded", file.name);
-    router.push("/character");
+  async function handleUpload(file: File) {
+    try {
+      await uploadGameplay(file);
+      router.push("/character");
+    } catch (error) {
+      console.error("Gameplay upload failed", error);
+      alert("Upload failed. Check GEMINI_API_KEY and try again.");
+    }
   }
 
   return (

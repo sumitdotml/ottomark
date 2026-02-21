@@ -5,6 +5,7 @@ export interface Character {
   voiceWeight: number;
   personality: "sarcastic" | "funny" | "rude" | "chill";
   voiceSample: string;
+  profileMarkdown?: string;
   createdAt: number;
 }
 
@@ -19,4 +20,22 @@ export interface GenerationStep {
   id: string;
   label: string;
   status: "pending" | "in_progress" | "completed";
+}
+
+export interface UploadedVideoRef {
+  fileName: string;
+  fileUri: string;
+  mimeType: string;
+  originalName: string;
+}
+
+export interface VideoDetailsResult {
+  draftOutput: string;
+  modelUsed: string;
+}
+
+export interface ScriptGenerationResult {
+  script: string;
+  modelUsed: string;
+  repaired: boolean;
 }
