@@ -50,52 +50,49 @@ export default function CharacterPage() {
           </p>
         </div>
 
-        {characters.length > 0 && (
-          <div
-            className="animate-fade-up mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3"
-            style={{ animationDelay: "0.1s" }}
-          >
-            {characters.map((c) => (
-              <CharacterCard
-                key={c.id}
-                character={c}
-                selected={selectedId === c.id}
-                onClick={() => {
-                  if (selectedId === c.id) {
-                    setEditingCharacter(c);
-                    setShowModal(true);
-                  } else {
-                    setSelectedId(c.id);
-                  }
-                }}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
-        )}
-
         <div
-          className="animate-fade-up mt-8 flex flex-wrap gap-4"
-          style={{ animationDelay: "0.2s" }}
+          className="animate-fade-up mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3"
+          style={{ animationDelay: "0.1s" }}
         >
           <button
             onClick={() => {
               setEditingCharacter(null);
               setShowModal(true);
             }}
-            className="rounded-xl border border-card-border px-8 py-4 font-display text-base font-medium transition-colors hover:border-fg hover:text-fg"
+            className="flex flex-col items-center justify-center gap-3 rounded-[var(--radius)] border-2 border-dashed border-accent/30 bg-accent/5 p-8 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/60 hover:bg-accent/10"
           >
-            + Create New
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-accent/10">
+              <span className="text-3xl text-accent">+</span>
+            </div>
+            <p className="font-display text-base font-semibold text-accent">Create New</p>
           </button>
-          {selectedId && (
-            <button
-              onClick={handleGenerate}
-              className="rounded-xl bg-accent px-6 py-3 font-display text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-accent-hover"
-            >
-              Generate Videos →
-            </button>
-          )}
+          {characters.map((c) => (
+            <CharacterCard
+              key={c.id}
+              character={c}
+              selected={selectedId === c.id}
+              onClick={() => {
+                if (selectedId === c.id) {
+                  setEditingCharacter(c);
+                  setShowModal(true);
+                } else {
+                  setSelectedId(c.id);
+                }
+              }}
+              onDelete={handleDelete}
+            />
+          ))}
         </div>
+
+        {selectedId && (
+          <button
+            onClick={handleGenerate}
+            className="animate-fade-up mt-8 w-full rounded-xl bg-accent py-4 font-display text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-accent-hover"
+            style={{ animationDelay: "0.2s" }}
+          >
+            Generate Videos →
+          </button>
+        )}
       </div>
 
       {showModal && (
