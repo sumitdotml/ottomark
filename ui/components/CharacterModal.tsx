@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Character } from "@/lib/types";
-import VoiceSlider from "./VoiceSlider";
+import { Character, VoiceId } from "@/lib/types";
 import PersonalityChips from "./PersonalityChips";
-import VoiceSamplePicker from "./VoiceSamplePicker";
+import VoicePicker from "./VoicePicker";
 
 interface CharacterModalProps {
   onSave: (character: Character) => void;
@@ -15,13 +14,12 @@ interface CharacterModalProps {
 export default function CharacterModal({ onSave, onClose, character }: CharacterModalProps) {
   const [nickname, setNickname] = useState(character?.nickname ?? "");
   const [imageUrl, setImageUrl] = useState<string | null>(character?.imageUrl ?? null);
-  const [voiceWeight, setVoiceWeight] = useState(character?.voiceWeight ?? 50);
   const [personality, setPersonality] = useState<Character["personality"]>(character?.personality ?? "funny");
-  const [voiceSample, setVoiceSample] = useState(character?.voiceSample ?? "smooth");
   const [profileMarkdown, setProfileMarkdown] = useState(character?.profileMarkdown ?? "");
   const [showProfileEditor, setShowProfileEditor] = useState(
     Boolean(character?.profileMarkdown?.trim())
   );
+  const [voice, setVoice] = useState<VoiceId>(character?.voice ?? "smooth");
   const fileRef = useRef<HTMLInputElement>(null);
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -49,10 +47,9 @@ export default function CharacterModal({ onSave, onClose, character }: Character
       id: character?.id ?? crypto.randomUUID(),
       nickname: nickname.trim(),
       imageUrl,
-      voiceWeight,
       personality,
-      voiceSample,
       profileMarkdown: profileMarkdown.trim() || undefined,
+      voice,
       createdAt: character?.createdAt ?? Date.now(),
     });
   }
@@ -104,9 +101,7 @@ export default function CharacterModal({ onSave, onClose, character }: Character
             />
           </div>
 
-          <VoiceSlider value={voiceWeight} onChange={setVoiceWeight} />
           <PersonalityChips value={personality} onChange={setPersonality} />
-          <VoiceSamplePicker value={voiceSample} onChange={setVoiceSample} />
           <div className="rounded-xl border border-card-border bg-card-bg/40 p-3">
             <button
               type="button"
@@ -130,6 +125,7 @@ export default function CharacterModal({ onSave, onClose, character }: Character
               />
             ) : null}
           </div>
+          <VoicePicker value={voice} onChange={setVoice} />
         </div>
 
         <div className="mt-8 flex gap-3">

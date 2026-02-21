@@ -37,9 +37,8 @@ game-demo/
     UploadButton.tsx          # Styled file input for video
     CharacterCard.tsx         # Saved character card (selectable)
     CharacterModal.tsx        # New character creation form
-    VoiceSlider.tsx           # Heavy ↔ Light slider
     PersonalityChips.tsx      # Sarcastic / Funny / Rude / Chill radio chips
-    VoiceSamplePicker.tsx     # 3-4 audio sample buttons
+    VoicePicker.tsx           # 5 Gemini voice options (Upbeat, Gravelly, Smooth, Casual, Warm)
     VideoCard.tsx             # Thumbnail + inline player + download
     LoadingOverlay.tsx        # Fake "generating" animation
   lib/
@@ -241,3 +240,86 @@ Existing `animate-fade-up` + Tailwind `animate-pulse` cover all step animations.
 4. After all steps, video grid appears
 5. Suspense fallback still works (no props = static text)
 6. `/results` without `characterId` still redirects to `/`
+
+---
+
+## Iteration 3: Voice Parameter Restructuring + Gemini Integration
+
+PR#2 adds `script-to-voice.ts` which calls Gemini's TTS API (`gemini-2.5-flash-preview-tts`) with a hardcoded voice name (`'Kore'`). Restructure UI voice parameters to map to Gemini's voices, pick 5 for gaming commentary, and prepare the integration path so the hardcoded voice becomes dynamic.
+
+### Selected Gemini Voices (5)
+
+| Voice | Gemini Descriptor | Maps to current | Why |
+|---|---|---|---|
+| **Puck** | Upbeat | High Energy | energetic commentary for highlights |
+| **Algenib** | Gravelly | Deep & Gravelly | dramatic/intense gameplay moments |
+| **Algieba** | Smooth | Smooth & Clean | polished, professional narration |
+| **Zubenelgenubi** | Casual | Laid Back | relaxed, conversational commentary |
+| **Sulafat** | Warm | NEW (5th) | friendly, approachable tone |
+
+**Demo pair** (2 to fully integrate): **Puck** + **Algenib** — maximum contrast for demo impact.
+
+### Parameter Changes
+
+**Voice (was "Voice Sample") — 5 options**
+
+Rename from "Voice Sample" to "Voice". Labels use Gemini's own descriptors:
+
+```ts
+export const VOICE_OPTIONS = [
+  { id: "upbeat", label: "Upbeat", geminiVoice: "Puck" },
+  { id: "gravelly", label: "Gravelly", geminiVoice: "Algenib" },
+  { id: "smooth", label: "Smooth", geminiVoice: "Algieba" },
+  { id: "casual", label: "Casual", geminiVoice: "Zubenelgenubi" },
+  { id: "warm", label: "Warm", geminiVoice: "Sulafat" },
+] as const;
+```
+
+**Personality — keep 4 options as-is**
+
+Personality controls *what* the AI says (script generation prompt tone), not *how* it sounds:
+- Sarcastic, Funny, Rude, Chill
+
+Mapped to text prompt prefixes at generation time.
+
+**Voice Weight slider — DROP**
+
+Gemini TTS has no pitch/speed parameter. Remove the slider, its state, and its component entirely.
+
+### Files to Change
+
+| File | Change |
+|---|---|
+| `ui/lib/types.ts` | Update `Character.voiceSample` → `Character.voice` with union type of 5 IDs; remove `voiceWeight` |
+| `ui/lib/constants.ts` | Replace `VOICE_SAMPLES` with `VOICE_OPTIONS` (5 entries + `geminiVoice` field) |
+| `ui/components/VoiceSamplePicker.tsx` | Rename to `VoicePicker.tsx`, update to 5 items, new layout |
+| `ui/components/CharacterModal.tsx` | Update state from `voiceSample` → `voice`, remove slider state + import |
+| `ui/lib/storage.ts` | Migration: remap old `voiceSample` values to new `voice` IDs for existing characters |
+| `ui/lib/voice-map.ts` | **New** — `resolveGeminiVoice(voiceId)` returns Gemini voice name string |
+| `ui/components/VoiceSlider.tsx` | **Delete** |
+
+### Integration with PR#2
+
+When PR#2 merges, `script-to-voice.ts` needs:
+
+1. Accept `voiceName` as parameter instead of hardcoded `'Kore'`
+2. Accept `personality` for tone prefix in the text prompt
+3. The API boundary (`ui/lib/api.ts`) passes `{ voiceName, personality, script }` to the backend
+
+```
+Character.voice ("upbeat")
+  → resolveGeminiVoice("upbeat")
+  → "Puck"
+  → script-to-voice.ts voiceName param
+```
+
+For the 2 demo voices (Puck + Algenib), wire the full pipeline. The other 3 are configured in the UI and mapping but won't have tested audio output until more voices are integrated.
+
+### Verification
+
+1. `npm run build` passes
+2. Character modal shows 5 voice options with new labels
+3. Creating a character saves the new `voice` field correctly
+4. Existing characters with old `voiceSample` values migrate cleanly
+5. `resolveGeminiVoice()` returns correct Gemini voice name for all 5 IDs
+6. Voice Weight slider is gone from the modal

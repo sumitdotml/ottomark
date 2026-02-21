@@ -2,12 +2,13 @@ import { VideoResult } from "./types";
 
 export const PERSONALITY_OPTIONS = ["sarcastic", "funny", "rude", "chill"] as const;
 
-export const VOICE_SAMPLES = [
-  { id: "deep", label: "Deep & Gravelly" },
-  { id: "smooth", label: "Smooth & Clean" },
-  { id: "energetic", label: "High Energy" },
-  { id: "laid-back", label: "Laid Back" },
-];
+export const VOICE_OPTIONS = [
+  { id: "upbeat", label: "Upbeat", geminiVoice: "Puck" },
+  { id: "gravelly", label: "Gravelly", geminiVoice: "Algenib" },
+  { id: "smooth", label: "Smooth", geminiVoice: "Algieba" },
+  { id: "casual", label: "Casual", geminiVoice: "Zubenelgenubi" },
+  { id: "warm", label: "Warm", geminiVoice: "Sulafat" },
+] as const;
 
 export const PLACEHOLDER_VIDEOS: VideoResult[] = [
   { id: "v1", title: "Highlight Reel", thumbnailColor: "#E8553D", label: "Generated Video 1" },

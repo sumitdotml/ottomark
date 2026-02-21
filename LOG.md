@@ -18,3 +18,12 @@
 7. homepage spacing tightened so text doesn't overflow past the video, browse-characters is a lightweight text link now
 8. results page buttons bumped to `text-base` to match character page
 9. avatar uploads resize to 128x128 JPEG before storing -- fixes localStorage quota crash on 3rd character
+
+## PR #4 — Gemini voice mapping (3:14 PM)
+
+1. replaced `voiceSample` (4 generic labels) + `voiceWeight` slider with single `voice` field mapped to 5 Gemini TTS voices
+2. voice picks: Puck (upbeat), Algenib (gravelly), Algieba (smooth), Zubenelgenubi (casual), Sulafat (warm)
+3. demo pair for full pipeline: Puck + Algenib -- max timbral contrast
+4. `resolveGeminiVoice()` in `ui/lib/voice-map.ts` maps UI IDs to Gemini voice names
+5. localStorage migration auto-remaps old characters (deep→gravelly, smooth→smooth, energetic→upbeat, laid-back→casual)
+6. left review comment on PR#2 with integration instructions for replacing hardcoded `'Kore'`
