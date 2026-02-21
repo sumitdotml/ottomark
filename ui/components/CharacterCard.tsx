@@ -6,11 +6,12 @@ import { Character } from "@/lib/types";
 interface CharacterCardProps {
   character: Character;
   selected: boolean;
+  generated: boolean;
   onClick: () => void;
   onDelete?: (id: string) => void;
 }
 
-export default function CharacterCard({ character, selected, onClick, onDelete }: CharacterCardProps) {
+export default function CharacterCard({ character, selected, generated, onClick, onDelete }: CharacterCardProps) {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   return (
@@ -24,22 +25,28 @@ export default function CharacterCard({ character, selected, onClick, onDelete }
         }`}
         style={{ boxShadow: selected ? undefined : "var(--card-shadow)" }}
       >
-        <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-fg/10">
-          {character.imageUrl ? (
-            <img
-              src={character.imageUrl}
-              alt={character.nickname}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <span className="font-display text-2xl font-bold text-muted">
-              {character.nickname.charAt(0).toUpperCase()}
-            </span>
-          )}
+        <div className={`rounded-full p-[3px] ${generated ? "generated-ring" : ""}`}>
+          <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-fg/10">
+            {character.imageUrl ? (
+              <img
+                src={character.imageUrl}
+                alt={character.nickname}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className="font-display text-2xl font-bold text-muted">
+                {character.nickname.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
         </div>
         <div>
           <p className="font-display text-base font-semibold">{character.nickname}</p>
-          <p className="mt-0.5 text-xs capitalize text-muted">{character.personality}</p>
+          {generated ? (
+            <p className="mt-0.5 text-xs font-medium text-accent">Video ready</p>
+          ) : (
+            <p className="mt-0.5 text-xs capitalize text-muted">{character.personality}</p>
+          )}
         </div>
       </button>
 
