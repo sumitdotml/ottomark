@@ -27,3 +27,14 @@
 4. `resolveGeminiVoice()` in `ui/lib/voice-map.ts` maps UI IDs to Gemini voice names
 5. localStorage migration auto-remaps old characters (deep→gravelly, smooth→smooth, energetic→upbeat, laid-back→casual)
 6. left review comment on PR#2 with integration instructions for replacing hardcoded `'Kore'`
+
+
+
+## PR #2 changes - Voice generation (12:20 PM)
+
+1. Mapping voice to personalities - [docs](https://discord.com/channels/@me/1474037988890644634/1474608395553079497)
+2. API sample for text to voice clip
+   1. Add `GEMINI_API_KEY` in .env.
+   2. `npm install`
+   3. `npx ts-node script-to-voice.ts`
+   4. `play influencer-audio.wav`
