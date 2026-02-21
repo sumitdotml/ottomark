@@ -61,9 +61,12 @@ export default function CharacterPage() {
                 character={c}
                 selected={selectedId === c.id}
                 onClick={() => {
-                  setSelectedId(c.id);
-                  setEditingCharacter(c);
-                  setShowModal(true);
+                  if (selectedId === c.id) {
+                    setEditingCharacter(c);
+                    setShowModal(true);
+                  } else {
+                    setSelectedId(c.id);
+                  }
                 }}
                 onDelete={handleDelete}
               />
