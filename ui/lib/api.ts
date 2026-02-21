@@ -1,5 +1,4 @@
 import {
-  Character,
   GenerationStep,
   ScriptGenerationResult,
   UploadedVideoRef,
@@ -11,9 +10,9 @@ import { PLACEHOLDER_VIDEOS } from "./constants";
 const STEP_DEFINITIONS = [
   { id: "analyze", label: "Analyzing video", duration: 1500 },
   { id: "script", label: "Generating reel script", duration: 2000 },
-  { id: "thumbnails", label: "Creating thumbnail art", duration: 3000 },
-  { id: "voice", label: "Giving the character a voice", duration: 1800 },
-  { id: "assemble", label: "Putting it all together", duration: 1200 },
+  { id: "thumbnails", label: "Creating thumbnail art", duration: 4000 },
+  { id: "voice", label: "Giving the character a voice", duration: 5000 },
+  { id: "assemble", label: "Putting it all together", duration: 3000 },
 ] as const;
 
 export const GENERATION_STEPS: GenerationStep[] = STEP_DEFINITIONS.map(
@@ -24,34 +23,30 @@ const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const UPLOADED_VIDEO_KEY = "gamevoice-uploaded-video";
 const GAMEPLAY_BLOB_KEY = "gamevoice-gameplay-blob";
 
-const THUMBNAIL_STYLES = ["cinematic", "comic", "neon"] as const;
-const RESULTS_CACHE_PREFIX = "gamevoice-results-";
+const CACHE_KEY = "gamevoice-results-session";
 
 interface CachedResults {
   videos: VideoResult[];
   script: string;
 }
 
-export function getGenerationCache(characterId: string): CachedResults | null {
-  const raw = sessionStorage.getItem(RESULTS_CACHE_PREFIX + characterId);
+export function getGenerationCache(): CachedResults | null {
+  const raw = sessionStorage.getItem(CACHE_KEY);
   if (!raw) return null;
   return JSON.parse(raw) as CachedResults;
 }
 
-function saveGenerationCache(characterId: string, videos: VideoResult[], script: string) {
-  sessionStorage.setItem(
-    RESULTS_CACHE_PREFIX + characterId,
-    JSON.stringify({ videos, script })
-  );
+function saveGenerationCache(videos: VideoResult[], script: string) {
+  sessionStorage.setItem(CACHE_KEY, JSON.stringify({ videos, script }));
 }
 
-export function hasGeneratedResults(characterId: string): boolean {
+export function hasGeneratedResults(): boolean {
   if (typeof window === "undefined") return false;
-  return sessionStorage.getItem(RESULTS_CACHE_PREFIX + characterId) !== null;
+  return sessionStorage.getItem(CACHE_KEY) !== null;
 }
 
-export function clearGenerationCache(characterId: string): void {
-  sessionStorage.removeItem(RESULTS_CACHE_PREFIX + characterId);
+export function clearGenerationCache(): void {
+  sessionStorage.removeItem(CACHE_KEY);
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -93,51 +88,20 @@ function getUploadedVideo(): UploadedVideoRef {
   return JSON.parse(raw) as UploadedVideoRef;
 }
 
-function buildCharacterProfile(character: Character): string {
-  const lines = [
-    `Nickname: ${character.nickname}`,
-    `Personality: ${character.personality}`,
-    `Voice: ${character.voice}`,
-  ];
-  if (character.profileMarkdown?.trim()) {
-    lines.push("");
-    lines.push("Additional character notes (markdown):");
-    lines.push(character.profileMarkdown.trim());
-  }
-  return lines.join("\n");
-}
-
-async function generateThumbnails(
-  analysisText: string
-): Promise<(string | null)[]> {
-  const results = await Promise.allSettled(
-    THUMBNAIL_STYLES.map((style) =>
-      postJson<{ imageBase64: string; mimeType: string }>(
-        "/api/gemini/thumbnail",
-        { analysisText, style }
-      )
-    )
-  );
-
-  return results.map((r) => {
-    if (r.status === "fulfilled") {
-      return `data:${r.value.mimeType};base64,${r.value.imageBase64}`;
-    }
-    return null;
-  });
-}
-
 export async function generateCommentary({
-  characterId,
-  character,
   onStepChange,
 }: {
-  characterId: string;
-  character: Character;
   onStepChange: (stepId: string, status: "in_progress" | "completed") => void;
 }): Promise<VideoResult[]> {
   const uploadedVideo = getUploadedVideo();
-  const videoUrl = sessionStorage.getItem(GAMEPLAY_BLOB_KEY) || undefined;
+  const TARGET_TOTAL_MS = 28000;
+  const startTime = Date.now();
+
+  const characterProfile = [
+    "Two commentators providing gameplay commentary:",
+    "- Puck: Upbeat, energetic, hype, fast-paced. Brings high energy and excitement.",
+    "- Algenib: Gravelly, intense, deep, dramatic. Brings gravitas and analysis.",
+  ].join("\n");
 
   onStepChange("analyze", "in_progress");
   const analysis = await postJson<VideoDetailsResult>("/api/gemini/analyze", {
@@ -148,32 +112,35 @@ export async function generateCommentary({
 
   onStepChange("script", "in_progress");
   const scriptResult = await postJson<ScriptGenerationResult>("/api/gemini/script", {
-    characterId,
-    characterName: character.nickname,
-    characterProfile: buildCharacterProfile(character),
+    characterName: "Puck & Algenib",
+    characterProfile,
     draftOutput: analysis.draftOutput,
   });
   onStepChange("script", "completed");
   sessionStorage.setItem("gamevoice-last-script", scriptResult.script);
 
+  const elapsed = Date.now() - startTime;
+  const remaining = Math.max(TARGET_TOTAL_MS - elapsed, 6000);
+  const fakeDurations = [
+    Math.round(remaining * 0.35),
+    Math.round(remaining * 0.40),
+    Math.round(remaining * 0.25),
+  ];
+
   onStepChange("thumbnails", "in_progress");
-  const thumbnails = await generateThumbnails(analysis.draftOutput);
+  await delay(fakeDurations[0]);
   onStepChange("thumbnails", "completed");
 
   onStepChange("voice", "in_progress");
-  await delay(STEP_DEFINITIONS[3].duration);
+  await delay(fakeDurations[1]);
   onStepChange("voice", "completed");
 
   onStepChange("assemble", "in_progress");
-  await delay(STEP_DEFINITIONS[4].duration);
+  await delay(fakeDurations[2]);
   onStepChange("assemble", "completed");
 
-  const videos = PLACEHOLDER_VIDEOS.map((placeholder, i) => ({
-    ...placeholder,
-    thumbnailUrl: thumbnails[i] ?? undefined,
-    videoUrl,
-  }));
+  const videos = PLACEHOLDER_VIDEOS.map((placeholder) => ({ ...placeholder }));
 
-  saveGenerationCache(characterId, videos, scriptResult.script);
+  saveGenerationCache(videos, scriptResult.script);
   return videos;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { VideoResult } from "@/lib/types";
 
 interface VideoCardProps {
@@ -12,6 +12,24 @@ export default function VideoCard({ video, index }: VideoCardProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [showPoster, setShowPoster] = useState(true);
+  const [frameThumb, setFrameThumb] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!video.videoUrl || video.thumbnailUrl) return;
+    const v = document.createElement("video");
+    v.crossOrigin = "anonymous";
+    v.preload = "auto";
+    v.muted = true;
+    v.src = video.videoUrl;
+    v.currentTime = 0.5;
+    v.oncanplay = () => {
+      const c = document.createElement("canvas");
+      c.width = v.videoWidth;
+      c.height = v.videoHeight;
+      c.getContext("2d")!.drawImage(v, 0, 0);
+      setFrameThumb(c.toDataURL("image/jpeg", 0.8));
+    };
+  }, [video.videoUrl, video.thumbnailUrl]);
 
   function togglePlay() {
     const el = videoRef.current;
@@ -54,7 +72,6 @@ export default function VideoCard({ video, index }: VideoCardProps) {
           <video
             ref={videoRef}
             src={video.videoUrl}
-            muted
             loop
             playsInline
             className="absolute inset-0 h-full w-full object-cover"
@@ -64,9 +81,9 @@ export default function VideoCard({ video, index }: VideoCardProps) {
         {/* thumbnail / poster overlay */}
         {showPoster && (
           <div className="absolute inset-0 z-10">
-            {video.thumbnailUrl ? (
+            {video.thumbnailUrl || frameThumb ? (
               <img
-                src={video.thumbnailUrl}
+                src={(video.thumbnailUrl || frameThumb)!}
                 alt={video.title}
                 className="h-full w-full object-cover"
               />

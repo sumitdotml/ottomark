@@ -1,19 +1,15 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { getCharacterById } from "@/lib/storage";
-import { GENERATION_STEPS, generateCommentary, getGenerationCache } from "@/lib/api";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { GENERATION_STEPS, generateCommentary, getGenerationCache, clearGenerationCache } from "@/lib/api";
 import { GenerationStep, VideoResult } from "@/lib/types";
 import LoadingOverlay from "@/components/LoadingOverlay";
 import VideoCard from "@/components/VideoCard";
 
-function ResultsContent() {
-  const searchParams = useSearchParams();
+export default function ResultsPage() {
   const router = useRouter();
-  const characterId = searchParams.get("characterId");
   const [loading, setLoading] = useState(true);
-  const [characterName, setCharacterName] = useState("");
   const [generatedScript, setGeneratedScript] = useState("");
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [steps, setSteps] = useState<GenerationStep[]>(
@@ -31,18 +27,7 @@ function ResultsContent() {
   );
 
   useEffect(() => {
-    if (!characterId) {
-      router.replace("/");
-      return;
-    }
-    const character = getCharacterById(characterId);
-    if (!character) {
-      router.replace("/character");
-      return;
-    }
-    setCharacterName(character.nickname);
-
-    const cached = getGenerationCache(characterId);
+    const cached = getGenerationCache();
     if (cached) {
       setVideos(cached.videos);
       setGeneratedScript(cached.script);
@@ -52,7 +37,7 @@ function ResultsContent() {
 
     let cancelled = false;
 
-    generateCommentary({ characterId, character, onStepChange })
+    generateCommentary({ onStepChange })
       .then(async (result) => {
         if (cancelled) return;
         setVideos(result);
@@ -73,7 +58,7 @@ function ResultsContent() {
     return () => {
       cancelled = true;
     };
-  }, [characterId, router, onStepChange]);
+  }, [onStepChange]);
 
   if (loading) return <LoadingOverlay steps={steps} />;
   if (generationError) {
@@ -95,7 +80,7 @@ function ResultsContent() {
               onClick={() => router.push("/character")}
               className="rounded-xl border border-card-border px-6 py-3 font-display text-sm font-medium transition-all hover:-translate-y-0.5 hover:border-fg hover:text-fg"
             >
-              Back to Characters
+              Back
             </button>
           </div>
         </div>
@@ -108,7 +93,7 @@ function ResultsContent() {
       <div className="w-full max-w-5xl">
         <div className="animate-fade-up mb-12">
           <h1 className="font-display text-4xl font-800 tracking-tight lg:text-5xl">
-            {characterName ? `${characterName}'s` : "Your"} Commentary
+            Puck & Algenib&apos;s Commentary
           </h1>
           <p className="mt-3 text-lg text-muted">
             3 AI-generated commentary samples, ready to watch.
@@ -143,21 +128,16 @@ function ResultsContent() {
             Back to Home
           </button>
           <button
-            onClick={() => router.push("/character")}
+            onClick={() => {
+              clearGenerationCache();
+              window.location.href = "/results";
+            }}
             className="rounded-xl bg-accent px-8 py-3.5 font-display text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-accent-hover"
           >
-            Create Another Character
+            Regenerate
           </button>
         </div>
       </div>
     </div>
-  );
-}
-
-export default function ResultsPage() {
-  return (
-    <Suspense fallback={<LoadingOverlay />}>
-      <ResultsContent />
-    </Suspense>
   );
 }
