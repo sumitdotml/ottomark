@@ -79,13 +79,13 @@ function ResultsContent() {
         >
           <button
             onClick={() => router.push("/")}
-            className="rounded-xl border border-card-border px-6 py-3 font-display text-sm font-medium transition-colors hover:border-fg hover:text-fg"
+            className="rounded-xl border border-card-border px-8 py-3.5 font-display text-base font-medium transition-all hover:-translate-y-0.5 hover:border-fg hover:text-fg"
           >
             Back to Home
           </button>
           <button
             onClick={() => router.push("/character")}
-            className="rounded-xl bg-accent px-6 py-3 font-display text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-accent-hover"
+            className="rounded-xl bg-accent px-8 py-3.5 font-display text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-accent-hover"
           >
             Create Another Character
           </button>
