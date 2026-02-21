@@ -15,5 +15,5 @@
 2. API sample for text to voice clip
    1. Add `GEMINI_API_KEY` in .env.
    2. `npm install`
-   3. `npx tsx script-to-voice.ts`
+   3. `npx ts-node script-to-voice.ts`
    4. `play influencer-audio.wav`
