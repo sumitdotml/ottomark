@@ -15,8 +15,8 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "GameVoice — AI Commentary Generator",
-  description: "Upload your gameplay footage and generate custom AI commentary",
+  title: "Ottomark — Gameplay in. Reels out.",
+  description: "Upload your gameplay footage and generate custom AI commentary with unique character voices.",
 };
 
 export default function RootLayout({

@@ -39,9 +39,9 @@ export default function Home() {
           <h1
             className="animate-fade-up font-display text-5xl font-800 leading-[1.1] tracking-tight lg:text-6xl"
           >
-            Your gameplay.
+            Gameplay in.
             <br />
-            <span className="text-accent">Their voice.</span>
+            <span className="text-accent">Reels out.</span>
           </h1>
           <p
             className="animate-fade-up mt-5 text-lg leading-relaxed text-muted"
@@ -61,7 +61,7 @@ export default function Home() {
             className="animate-fade-up mt-2 font-display text-sm font-medium text-muted transition-colors hover:text-accent"
             style={{ animationDelay: "0.45s" }}
           >
-            or browse your characters <span className="text-accent">→</span>
+            or meet the voices <span className="text-accent">→</span>
           </Link>
         </div>
       </div>
