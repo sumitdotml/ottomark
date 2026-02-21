@@ -1,10 +1,11 @@
+export type VoiceId = "upbeat" | "gravelly" | "smooth" | "casual" | "warm";
+
 export interface Character {
   id: string;
   nickname: string;
   imageUrl: string | null;
-  voiceWeight: number;
   personality: "sarcastic" | "funny" | "rude" | "chill";
-  voiceSample: string;
+  voice: VoiceId;
   createdAt: number;
 }
 
