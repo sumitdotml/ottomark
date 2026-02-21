@@ -50,17 +50,17 @@ Use this exact shape for new entries.
 
 ## Entries
 
-### MISTAKE-YYYYMMDD-001
-- id:
-- status: active
-- severity:
-- scope_tags: []
-- pattern:
-- prevention_rule:
-- validation_check:
-- first_seen:
-- last_seen:
-- occurrence_count:
+### MISTAKE-20260221-001
+- id: MISTAKE-20260221-001
+- status: resolved
+- severity: high
+- scope_tags: [code]
+- pattern: storing raw base64 data URLs (from FileReader.readAsDataURL) in localStorage without size constraints
+- prevention_rule: always resize/compress images before localStorage storage -- use canvas to downscale to max 128x128 and export as JPEG 0.7 quality
+- validation_check: create 3+ characters with avatar images without QuotaExceededError
+- first_seen: 2026-02-21
+- last_seen: 2026-02-21
+- occurrence_count: 1
 - evidence:
-  - file:
-  - commit:
+  - file:ui/components/CharacterModal.tsx:28
+  - file:ui/lib/storage.ts:19
