@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { DRAFT_MODEL, generateTextWithModel } from "@/lib/server/gemini";
+import { loadPromptFile } from "@/lib/server/prompts";
 
 export const runtime = "nodejs";
-
-const VIDEO_DETAILS_PROMPT = "TODO: Add your video-details prompt here.";
 
 export async function POST(req: Request) {
   try {
@@ -15,6 +14,7 @@ export async function POST(req: Request) {
       );
     }
 
+    const videoDetailsPrompt = await loadPromptFile("video-details-prompt.md");
     const draftOutput = await generateTextWithModel(DRAFT_MODEL, [
       {
         file_data: {
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
           mime_type: body.mimeType,
         },
       },
-      { text: VIDEO_DETAILS_PROMPT },
+      { text: videoDetailsPrompt },
     ]);
 
     return NextResponse.json({

@@ -4,20 +4,23 @@ import {
   generateWithFallback,
   hasValidSrtBlock,
 } from "@/lib/server/gemini";
+import { loadPromptFile } from "@/lib/server/prompts";
 
 export const runtime = "nodejs";
 
-const REFINEMENT_PROMPT_TEMPLATE =
-  "TODO: Add your script-refinement prompt here. character_name={{character_name}} character_profile={{character_profile}} draft_output={{draft_output}}";
-
 function buildRefinementPrompt(input: {
+  template: string;
   characterName: string;
   characterProfile: string;
   draftOutput: string;
 }): string {
-  return REFINEMENT_PROMPT_TEMPLATE.replace("{{character_name}}", input.characterName)
-    .replace("{{character_profile}}", input.characterProfile)
-    .replace("{{draft_output}}", input.draftOutput);
+  return input.template
+    .replaceAll("{{character_name}}", input.characterName)
+    .replaceAll("{character_name}", input.characterName)
+    .replaceAll("{{character_profile}}", input.characterProfile)
+    .replaceAll("{character_profile}", input.characterProfile)
+    .replaceAll("{{draft_output}}", input.draftOutput)
+    .replaceAll("{draft_output}", input.draftOutput);
 }
 
 function buildSrtRepairPrompt(currentScript: string): string {
@@ -41,10 +44,14 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+    const refinementPromptTemplate = await loadPromptFile(
+      "script-refinement-prompt.md"
+    );
 
     const initial = await generateWithFallback(REFINER_MODEL_CANDIDATES, [
       {
         text: buildRefinementPrompt({
+          template: refinementPromptTemplate,
           characterName: body.characterName,
           characterProfile: body.characterProfile,
           draftOutput: body.draftOutput,

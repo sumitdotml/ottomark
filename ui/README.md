@@ -11,8 +11,8 @@ GEMINI_API_KEY=your_api_key_here
 Gemini integration entry points:
 
 - `ui/app/api/gemini/upload/route.ts` uploads the selected video to Gemini Files API.
-- `ui/app/api/gemini/analyze/route.ts` performs the draft video-details call.
-- `ui/app/api/gemini/script/route.ts` performs refinement with model fallback and optional SRT repair.
+- `ui/app/api/gemini/analyze/route.ts` performs the draft video-details call using `ui/prompts/video-details-prompt.md`.
+- `ui/app/api/gemini/script/route.ts` performs refinement with model fallback and optional SRT repair using `ui/prompts/script-refinement-prompt.md`.
 - `ui/lib/api.ts` remains the client-side mock/real boundary used by UI pages.
 
 ## Getting Started
