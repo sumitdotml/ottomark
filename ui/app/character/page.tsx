@@ -84,15 +84,18 @@ export default function CharacterPage() {
           ))}
         </div>
 
-        {selectedId && (
-          <button
-            onClick={handleGenerate}
-            className="animate-fade-up mt-8 w-full rounded-xl bg-accent py-4 font-display text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-accent-hover"
-            style={{ animationDelay: "0.2s" }}
-          >
-            Generate Videos →
-          </button>
-        )}
+        <button
+          onClick={handleGenerate}
+          disabled={!selectedId}
+          className={`animate-fade-up mt-8 w-full rounded-xl py-4 font-display text-base font-semibold transition-all ${
+            selectedId
+              ? "bg-accent text-white hover:-translate-y-0.5 hover:bg-accent-hover"
+              : "cursor-not-allowed bg-card-border text-muted"
+          }`}
+          style={{ animationDelay: "0.2s" }}
+        >
+          {selectedId ? "Generate Videos →" : "Select a character to continue"}
+        </button>
       </div>
 
       {showModal && (

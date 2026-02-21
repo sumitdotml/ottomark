@@ -32,24 +32,24 @@ export default function Home() {
             <span className="text-accent">Their voice.</span>
           </h1>
           <p
-            className="animate-fade-up mt-6 text-lg leading-relaxed text-muted"
+            className="animate-fade-up mt-5 text-lg leading-relaxed text-muted"
             style={{ animationDelay: "0.25s" }}
           >
             Upload your gameplay footage and generate custom AI commentary
             with unique character voices.
           </p>
           <div
-            className="animate-fade-up mt-10"
+            className="animate-fade-up mt-6"
             style={{ animationDelay: "0.35s" }}
           >
             <UploadButton onUpload={handleUpload} />
           </div>
           <Link
             href="/character"
-            className="animate-fade-up mt-4 font-display text-sm text-muted transition-colors hover:text-accent"
+            className="animate-fade-up mt-2 font-display text-sm font-medium text-muted transition-colors hover:text-accent"
             style={{ animationDelay: "0.45s" }}
           >
-            or browse your characters →
+            or browse your characters <span className="text-accent">→</span>
           </Link>
         </div>
       </div>
