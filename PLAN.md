@@ -163,3 +163,81 @@ All screens built using **frontend-design skill** guidelines — distinctive typ
 3. Character cards visually larger with working delete button
 4. Modal has avatar top-right next to title
 5. Deleting a character removes it from the grid
+
+---
+
+## Iteration 2: Step-by-Step Loading Progress + Mock API Layer
+
+Replace the static 3-second loading with progressive step messages and a mock API service that's trivially swappable with real backend calls.
+
+### Files to change
+
+| File | Action |
+|------|--------|
+| `ui/lib/types.ts` | Add `GenerationStep` interface |
+| `ui/lib/api.ts` | **New file** — mock service with `generateCommentary()` |
+| `ui/components/LoadingOverlay.tsx` | Accept `steps` prop, render step list below blob |
+| `ui/app/results/page.tsx` | Wire step state + `generateCommentary` orchestration |
+| `CLAUDE.md` | Add note about mock API separation point |
+
+### 1. Add `GenerationStep` type
+**File**: `ui/lib/types.ts`
+
+```ts
+export interface GenerationStep {
+  id: string;
+  label: string;
+  status: "pending" | "in_progress" | "completed";
+}
+```
+
+### 2. Create mock API service
+**File**: `ui/lib/api.ts` (new)
+
+- Export `GENERATION_STEPS` array with step definitions + simulated durations:
+  1. `"analyze"` — "Analyzing video" — 1500ms
+  2. `"script"` — "Generating reel script" — 2000ms
+  3. `"voice"` — "Giving the character a voice" — 1800ms
+  4. `"assemble"` — "Putting it all together" — 1200ms
+- Export async `generateCommentary(options)`:
+  - Takes `{ characterId, onStepChange }` where `onStepChange(stepId, status)` is a callback
+  - Loops through steps: set `in_progress` → `delay()` → set `completed`
+  - Returns `Promise<VideoResult[]>` (currently returns `PLACEHOLDER_VIDEOS`)
+- **Future swap**: replace `delay()` calls with `fetch()` calls — the callback contract stays identical
+
+### 3. Update LoadingOverlay with progressive steps
+**File**: `ui/components/LoadingOverlay.tsx`
+
+- Add optional `steps?: GenerationStep[]` prop
+- Keep morphing blob section **completely untouched**
+- Replace static "Generating commentary..." with step list:
+  - `pending` → hidden (`opacity-0`, `translate-y-2`)
+  - `in_progress` → fades in (existing `animate-fade-up`), pulsing accent dot, "..." suffix
+  - `completed` → accent checkmark `✓`, text fades to muted
+- Fallback: no `steps` prop → show original static text (Suspense compatibility)
+
+### 4. Orchestrate in results page
+**File**: `ui/app/results/page.tsx`
+
+- Add `steps` state initialized from `GENERATION_STEPS` (all `"pending"`)
+- Add `videos` state (`VideoResult[]`)
+- Replace `setTimeout` with `generateCommentary()` call in `useEffect`
+- `onStepChange` callback (`useCallback`) updates step statuses
+- On completion: set `videos`, 600ms pause for final checkmark visibility, then `setLoading(false)`
+- Pass `<LoadingOverlay steps={steps} />` while loading
+- Render `videos` state instead of `PLACEHOLDER_VIDEOS` in the grid
+- Cleanup: `cancelled` flag prevents state updates on unmount
+
+### 5. Add API integration note to CLAUDE.md
+Add a section noting `ui/lib/api.ts` is the mock↔real API boundary. When backend is ready, only this file changes.
+
+### No new CSS needed
+Existing `animate-fade-up` + Tailwind `animate-pulse` cover all step animations.
+
+### Verification
+1. `npm run build` passes
+2. Navigate to `/results?characterId=xxx` — blob plays, steps appear one-by-one
+3. Each step: hidden → pulsing dot → checkmark
+4. After all steps, video grid appears
+5. Suspense fallback still works (no props = static text)
+6. `/results` without `characterId` still redirects to `/`

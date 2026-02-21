@@ -14,3 +14,9 @@ export interface VideoResult {
   thumbnailColor: string;
   label: string;
 }
+
+export interface GenerationStep {
+  id: string;
+  label: string;
+  status: "pending" | "in_progress" | "completed";
+}
