@@ -111,19 +111,22 @@ export async function generateCommentary({
   onStepChange("analyze", "completed");
 
   onStepChange("script", "in_progress");
-  const scriptResult = await postJson<ScriptGenerationResult>("/api/gemini/script", {
-    characterName: "Puck & Algenib",
-    characterProfile,
-    draftOutput: analysis.draftOutput,
-  });
+  const [scriptResult] = await Promise.all([
+    postJson<ScriptGenerationResult>("/api/gemini/script", {
+      characterName: "Puck & Algenib",
+      characterProfile,
+      draftOutput: analysis.draftOutput,
+    }),
+    delay(3000),
+  ]);
   onStepChange("script", "completed");
   sessionStorage.setItem("gamevoice-last-script", scriptResult.script);
 
   const elapsed = Date.now() - startTime;
-  const remaining = Math.max(TARGET_TOTAL_MS - elapsed, 6000);
+  const remaining = Math.max(TARGET_TOTAL_MS - elapsed, 9000);
   const fakeDurations = [
-    Math.round(remaining * 0.35),
     Math.round(remaining * 0.40),
+    Math.round(remaining * 0.35),
     Math.round(remaining * 0.25),
   ];
 

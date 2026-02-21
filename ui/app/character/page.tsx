@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { PRESET_CHARACTERS } from "@/lib/constants";
+import { clearGenerationCache } from "@/lib/api";
 
 export default function CharacterPage() {
   const router = useRouter();
@@ -56,7 +57,7 @@ export default function CharacterPage() {
         </div>
 
         <button
-          onClick={() => router.push("/results")}
+          onClick={() => { clearGenerationCache(); router.push("/results"); }}
           className="animate-fade-up mt-8 w-full rounded-xl bg-accent py-4 font-display text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-accent-hover"
           style={{ animationDelay: "0.2s" }}
         >

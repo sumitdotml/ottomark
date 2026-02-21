@@ -1,23 +1,30 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import HeroSection from "@/components/HeroSection";
 import UploadButton from "@/components/UploadButton";
+import LoadingOverlay from "@/components/LoadingOverlay";
 import { uploadGameplay } from "@/lib/api";
 
 export default function Home() {
   const router = useRouter();
+  const [uploading, setUploading] = useState(false);
 
   async function handleUpload(file: File) {
+    setUploading(true);
     try {
       await uploadGameplay(file);
       router.push("/character");
     } catch (error) {
       console.error("Gameplay upload failed", error);
+      setUploading(false);
       alert("Upload failed. Check GEMINI_API_KEY and try again.");
     }
   }
+
+  if (uploading) return <LoadingOverlay message="Uploading gameplay..." />;
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6">

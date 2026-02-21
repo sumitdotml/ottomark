@@ -118,3 +118,8 @@ body::before {
   );
   animation: ring-spin 3s linear infinite;
 }
+
+@keyframes quipBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-4px); opacity: 1; }
+}

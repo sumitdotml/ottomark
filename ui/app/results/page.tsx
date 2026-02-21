@@ -20,7 +20,11 @@ export default function ResultsPage() {
   const onStepChange = useCallback(
     (stepId: string, status: "in_progress" | "completed") => {
       setSteps((prev) =>
-        prev.map((s) => (s.id === stepId ? { ...s, status } : s))
+        prev.map((s) => {
+          if (s.id !== stepId) return s;
+          if (s.status === "completed" && status === "in_progress") return s;
+          return { ...s, status };
+        })
       );
     },
     []
