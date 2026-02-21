@@ -19,6 +19,9 @@ export default function CharacterModal({ onSave, onClose, character }: Character
   const [personality, setPersonality] = useState<Character["personality"]>(character?.personality ?? "funny");
   const [voiceSample, setVoiceSample] = useState(character?.voiceSample ?? "smooth");
   const [profileMarkdown, setProfileMarkdown] = useState(character?.profileMarkdown ?? "");
+  const [showProfileEditor, setShowProfileEditor] = useState(
+    Boolean(character?.profileMarkdown?.trim())
+  );
   const fileRef = useRef<HTMLInputElement>(null);
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -104,17 +107,28 @@ export default function CharacterModal({ onSave, onClose, character }: Character
           <VoiceSlider value={voiceWeight} onChange={setVoiceWeight} />
           <PersonalityChips value={personality} onChange={setPersonality} />
           <VoiceSamplePicker value={voiceSample} onChange={setVoiceSample} />
-          <div>
-            <label className="mb-2 block font-display text-sm font-semibold">
-              Character Profile (Markdown)
-            </label>
-            <textarea
-              value={profileMarkdown}
-              onChange={(e) => setProfileMarkdown(e.target.value)}
-              placeholder={"- Backstory\n- Catchphrases\n- Do/Don't rules"}
-              rows={6}
-              className="w-full resize-y rounded-xl border border-card-border bg-card-bg px-4 py-3 text-sm outline-none transition-colors placeholder:text-muted/50 focus:border-accent"
-            />
+          <div className="rounded-xl border border-card-border bg-card-bg/40 p-3">
+            <button
+              type="button"
+              onClick={() => setShowProfileEditor((prev) => !prev)}
+              className="flex w-full items-center justify-between text-left"
+            >
+              <span className="font-display text-sm font-semibold">
+                Character Profile (Markdown)
+              </span>
+              <span className="font-display text-xs text-muted">
+                {showProfileEditor ? "Hide" : "Add details"}
+              </span>
+            </button>
+            {showProfileEditor ? (
+              <textarea
+                value={profileMarkdown}
+                onChange={(e) => setProfileMarkdown(e.target.value)}
+                placeholder={"- Backstory\n- Catchphrases\n- Do/Don't rules"}
+                rows={6}
+                className="mt-3 w-full resize-y rounded-xl border border-card-border bg-card-bg px-4 py-3 text-sm outline-none transition-colors placeholder:text-muted/50 focus:border-accent"
+              />
+            ) : null}
           </div>
         </div>
 
