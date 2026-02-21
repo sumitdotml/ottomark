@@ -21,8 +21,9 @@ export default function VideoCard({ video, index }: VideoCardProps) {
     v.preload = "auto";
     v.muted = true;
     v.src = video.videoUrl;
-    v.currentTime = 0.5;
-    v.oncanplay = () => {
+    const seekTimes = [0.5, 3, 12];
+    v.currentTime = seekTimes[index] ?? 0.5;
+    v.onseeked = () => {
       const c = document.createElement("canvas");
       c.width = v.videoWidth;
       c.height = v.videoHeight;
