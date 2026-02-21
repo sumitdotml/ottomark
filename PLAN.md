@@ -1,325 +1,113 @@
-# Hackathon Game Prototype — UI Plan
+# TikTok/Reel-Style Results Page with Gemini Thumbnails
 
 ## Context
-Building a quick hackathon prototype with 3 screens: Landing → Character Definition → Video Results. No actual gameplay or video generation — real file uploads with mock processing. Next.js (App Router) + Tailwind. Using the **frontend-design skill** for distinctive, polished UI.
 
-## Design Direction
+The results page currently shows 3 video cards as colored `<div>` placeholders in 16:9 aspect ratio. The goal is a vertical reel aesthetic (TikTok/Instagram), playable + downloadable videos, and AI-generated thumbnails via Gemini's image generation API ("Nanobanana"). All 3 cards play the same video (the uploaded gameplay as a stand-in), but each gets a unique thumbnail style.
 
-**Aesthetic**: Refined minimalism — not generic white-on-white, but intentional and memorable.
-
-- **Typography**: Use Google Fonts — a distinctive display font (e.g., Sora, Outfit, or Satoshi) paired with a clean body font. Avoid Inter/Roboto/system defaults.
-- **Color palette**: Warm off-white background (`#FAFAF8` or similar), near-black text, one strong accent (deep indigo or warm coral) used sparingly for CTAs. CSS variables for consistency.
-- **Motion**: Staggered fade-in on page load, smooth page transitions, subtle hover lifts on cards. CSS transitions + `animation-delay` for orchestrated reveals.
-- **Spatial feel**: Generous whitespace, asymmetric hero layout, oversized headings, cards with soft shadows and rounded corners.
-- **Textures**: Subtle noise/grain overlay on backgrounds for depth. Soft gradient accents on key sections.
-- **Memorable detail**: The loading screen (Screen 3) — use an animated waveform or morphing shapes instead of a generic spinner.
-
-## Project Setup
-
-Initialize inside `/Users/sumit/playground/hackathons`:
-```bash
-npx create-next-app@latest game-demo --typescript --tailwind --eslint --app --src-dir=false --import-alias="@/*" --use-npm
-```
-Clean up default boilerplate (remove starter content from `page.tsx`, `globals.css`).
-
-## File Structure
-
-```
-game-demo/
-  app/
-    layout.tsx                # Root layout (Server Component)
-    page.tsx                  # Screen 1: Landing Page
-    character/page.tsx        # Screen 2: Character Definition
-    results/page.tsx          # Screen 3: Video Results Gallery
-    globals.css
-  components/
-    HeroSection.tsx           # Hero video + tagline
-    UploadButton.tsx          # Styled file input for video
-    CharacterCard.tsx         # Saved character card (selectable)
-    CharacterModal.tsx        # New character creation form
-    PersonalityChips.tsx      # Sarcastic / Funny / Rude / Chill radio chips
-    VoicePicker.tsx           # 5 Gemini voice options (Upbeat, Gravelly, Smooth, Casual, Warm)
-    VideoCard.tsx             # Thumbnail + inline player + download
-    LoadingOverlay.tsx        # Fake "generating" animation
-  lib/
-    types.ts                  # Character, VideoResult interfaces
-    storage.ts                # localStorage helpers
-    constants.ts              # Placeholder data, personality options, voice samples
-  public/
-    (placeholder assets — videos, thumbnails, voice samples)
-```
-
-## Screen 1: Landing Page (`/`)
-
-- Hero section with embedded gameplay video (YouTube iframe or placeholder `<video>`)
-- Tagline: "Upload your gameplay footage and generate custom AI commentary"
-- **Upload button**: hidden `<input type="file" accept="video/*">` behind a styled button
-- On upload: store file in state, set `sessionStorage` flag, navigate to `/character`
-
-## Screen 2: Character Definition (`/character`)
-
-**On mount**: read saved characters from `localStorage`
-- If characters exist → show selectable card grid + "Create New" button
-- If none → open creation modal directly
-
-**Character Modal fields:**
-1. **Nickname** — text input
-2. **Image upload** — file input with `FileReader.readAsDataURL()` preview
-3. **Voice weight** — range slider, "Heavy" ↔ "Light" labels
-4. **Personality** — chip selector: Sarcastic, Funny, Rude, Chill (single select)
-5. **Voice sample** — 3-4 buttons that play audio previews on click
-
-**"Generate Videos" button** → validate nickname, save character to `localStorage`, navigate to `/results?characterId=xxx`
-
-## Screen 3: Video Results Gallery (`/results`)
-
-- Read `characterId` from search params, load character name for display
-- Show `LoadingOverlay` for ~3 seconds (fake generation delay)
-- Display 3 `VideoCard` components in a `grid-cols-3` grid
-- Each card: thumbnail → click to play inline `<video>` → download `<a>` button
-- Navigation: "Back to Home" and "Create Another Character" buttons
-- Videos are hardcoded placeholders from `lib/constants.ts`
-
-## State Management
-
-| Data | Where | Why |
-|---|---|---|
-| Uploaded gameplay file | React `useState` + `sessionStorage` flag | Stays in memory, flag confirms upload happened |
-| Saved characters | `localStorage` via `lib/storage.ts` | Persists across reloads |
-| Selected character | URL search param `?characterId=xxx` | Passed between pages |
-| Video results | Hardcoded in `lib/constants.ts` | No real generation |
-
-No external state library needed — `useState` + `localStorage` + URL params covers everything.
-
-## Navigation Flow
-
-```
-Landing (/) --[upload video]--> Character (/character) --[generate]--> Results (/results?characterId=xxx)
-                                                                         |
-                                                              [Back to Home] --> /
-                                                              [Create Another] --> /character
-```
-
-## Placeholder Assets
-
-For initial development, use colored `<div>` placeholders (16:9 ratio, centered text like "Generated Video 1") instead of real video files. Voice samples can be placeholder buttons that log to console. Replace with real assets before demo.
-
-## Build Order
-
-1. Project setup + clean boilerplate + Google Fonts + CSS variables + global styles (grain texture, base typography)
-2. `lib/types.ts`, `lib/constants.ts`, `lib/storage.ts`
-3. Screen 1 — Landing Page (HeroSection, UploadButton) — asymmetric hero, staggered fade-in
-4. Screen 3 — Results Gallery (VideoCard, LoadingOverlay) — animated loading state, card hover effects
-5. Screen 2 — Character Definition (CharacterCard, CharacterModal + sub-components) — most complex
-6. Polish: responsive tweaks, motion refinement, micro-interactions
-
-All screens built using **frontend-design skill** guidelines — distinctive typography, intentional color, motion, and spatial composition.
-
-## Verification
-
-1. `npm run dev` — app starts without errors
-2. Landing page: upload a video file → navigates to `/character`
-3. Character page: create a new character with all fields → navigates to `/results`
-4. Results page: loading animation plays, 3 video cards appear, download buttons work
-5. Character page (revisit): previously saved character appears as selectable card
-6. Direct URL navigation to `/results` without `characterId` → redirects to `/`
-
----
-
-## Iteration 1: UI Feedback Fixes
-
-4 targeted changes based on screenshot review.
-
-### 1. Bigger character cards + delete button
-**File**: `ui/components/CharacterCard.tsx`
-- Avatar: `h-16 w-16` → `h-24 w-24`
-- Card padding: `p-6` → `p-8`
-- Name text: `text-sm` → `text-base`
-- Add delete (X) button in card top-right corner, new `onDelete` prop
-
-### 2. Bigger "Create New" button
-**File**: `ui/app/character/page.tsx`
-- Button sizing: `px-6 py-3 text-sm` → `px-8 py-4 text-base`
-- Wire up `onDelete` to `CharacterCard`, call `deleteCharacter`, refresh list
-
-### 3. Modal: avatar moved to top-right, bigger
-**File**: `ui/components/CharacterModal.tsx`
-- Top of modal becomes flex row: title left, avatar upload right
-- Avatar: `h-20 w-20` → `h-24 w-24`
-- Remove separate "Avatar" label (position is self-evident)
-
-### 4. Homepage: add nav to character page
-**File**: `ui/app/page.tsx`
-- Secondary link below upload button: "or browse your characters →" → `/character`
-
-### 5. Add `deleteCharacter` to storage
-**File**: `ui/lib/storage.ts`
-- `deleteCharacter(id: string)` — filter out by id and re-save
-
-### Verification
-1. `npm run build` passes
-2. Homepage shows link to `/character`
-3. Character cards visually larger with working delete button
-4. Modal has avatar top-right next to title
-5. Deleting a character removes it from the grid
-
----
-
-## Iteration 2: Step-by-Step Loading Progress + Mock API Layer
-
-Replace the static 3-second loading with progressive step messages and a mock API service that's trivially swappable with real backend calls.
-
-### Files to change
+## Files to Change
 
 | File | Action |
 |------|--------|
-| `ui/lib/types.ts` | Add `GenerationStep` interface |
-| `ui/lib/api.ts` | **New file** — mock service with `generateCommentary()` |
-| `ui/components/LoadingOverlay.tsx` | Accept `steps` prop, render step list below blob |
-| `ui/app/results/page.tsx` | Wire step state + `generateCommentary` orchestration |
-| `CLAUDE.md` | Add note about mock API separation point |
+| `ui/lib/types.ts` | Extend `VideoResult` with `thumbnailUrl?` and `videoUrl?` |
+| `ui/lib/constants.ts` | Relabel placeholders to "Sample 1/2/3" |
+| `ui/app/api/gemini/thumbnail/route.ts` | **New** — Gemini image generation endpoint |
+| `ui/lib/api.ts` | Store blob URL at upload, add thumbnail step, fix `buildCharacterProfile` |
+| `ui/components/VideoCard.tsx` | Rewrite to 9:16 reel card with `<video>` + thumbnail poster |
+| `ui/app/results/page.tsx` | Flex layout for 3 vertical cards |
 
-### 1. Add `GenerationStep` type
-**File**: `ui/lib/types.ts`
+## 1. Extend `VideoResult` type
+
+**File:** `ui/lib/types.ts`
+
+Add two optional fields (backward-compatible with existing placeholders):
 
 ```ts
-export interface GenerationStep {
+export interface VideoResult {
   id: string;
+  title: string;
+  thumbnailColor: string;      // fallback
   label: string;
-  status: "pending" | "in_progress" | "completed";
+  thumbnailUrl?: string;        // data:image/png;base64,... from Gemini
+  videoUrl?: string;            // blob: URL of uploaded gameplay
 }
 ```
 
-### 2. Create mock API service
-**File**: `ui/lib/api.ts` (new)
+## 2. Update placeholder labels
 
-- Export `GENERATION_STEPS` array with step definitions + simulated durations:
-  1. `"analyze"` — "Analyzing video" — 1500ms
-  2. `"script"` — "Generating reel script" — 2000ms
-  3. `"voice"` — "Giving the character a voice" — 1800ms
-  4. `"assemble"` — "Putting it all together" — 1200ms
-- Export async `generateCommentary(options)`:
-  - Takes `{ characterId, onStepChange }` where `onStepChange(stepId, status)` is a callback
-  - Loops through steps: set `in_progress` → `delay()` → set `completed`
-  - Returns `Promise<VideoResult[]>` (currently returns `PLACEHOLDER_VIDEOS`)
-- **Future swap**: replace `delay()` calls with `fetch()` calls — the callback contract stays identical
+**File:** `ui/lib/constants.ts`
 
-### 3. Update LoadingOverlay with progressive steps
-**File**: `ui/components/LoadingOverlay.tsx`
+Change titles/labels from "Highlight Reel" etc. to "Sample 1", "Sample 2", "Sample 3".
 
-- Add optional `steps?: GenerationStep[]` prop
-- Keep morphing blob section **completely untouched**
-- Replace static "Generating commentary..." with step list:
-  - `pending` → hidden (`opacity-0`, `translate-y-2`)
-  - `in_progress` → fades in (existing `animate-fade-up`), pulsing accent dot, "..." suffix
-  - `completed` → accent checkmark `✓`, text fades to muted
-- Fallback: no `steps` prop → show original static text (Suspense compatibility)
+## 3. New API route: `/api/gemini/thumbnail`
 
-### 4. Orchestrate in results page
-**File**: `ui/app/results/page.tsx`
+**File:** `ui/app/api/gemini/thumbnail/route.ts`
 
-- Add `steps` state initialized from `GENERATION_STEPS` (all `"pending"`)
-- Add `videos` state (`VideoResult[]`)
-- Replace `setTimeout` with `generateCommentary()` call in `useEffect`
-- `onStepChange` callback (`useCallback`) updates step statuses
-- On completion: set `videos`, 600ms pause for final checkmark visibility, then `setLoading(false)`
-- Pass `<LoadingOverlay steps={steps} />` while loading
-- Render `videos` state instead of `PLACEHOLDER_VIDEOS` in the grid
-- Cleanup: `cancelled` flag prevents state updates on unmount
+- Accepts `{ analysisText, style }` — calls `gemini-2.5-flash-image` with `responseModalities: ["IMAGE"]` and `imageConfig: { aspectRatio: "9:16" }`
+- Returns `{ imageBase64, mimeType }`
+- 3 style prompts, each fed the video analysis (truncated to 500 chars) for context:
+  - **"cinematic"** — dramatic lighting, deep shadows, cinematic render
+  - **"comic"** — bold comic book illustration, halftone textures, vibrant colors
+  - **"neon"** — cyberpunk neon glow, synthwave aesthetic, dark background
 
-### 5. Add API integration note to CLAUDE.md
-Add a section noting `ui/lib/api.ts` is the mock↔real API boundary. When backend is ready, only this file changes.
+## 4. Update generation pipeline
 
-### No new CSS needed
-Existing `animate-fade-up` + Tailwind `animate-pulse` cover all step animations.
+**File:** `ui/lib/api.ts`
 
-### Verification
-1. `npm run build` passes
-2. Navigate to `/results?characterId=xxx` — blob plays, steps appear one-by-one
-3. Each step: hidden → pulsing dot → checkmark
-4. After all steps, video grid appears
-5. Suspense fallback still works (no props = static text)
-6. `/results` without `characterId` still redirects to `/`
+**4a. Blob URL at upload time:**
+In `uploadGameplay()`, before posting to server, call `URL.createObjectURL(file)` and store the URL string in sessionStorage (`gamevoice-gameplay-blob`). This is a ~50-char string, not base64 data — safe per MISTAKE-001.
 
----
+**4b. New pipeline step:**
+Insert `"thumbnails"` ("Creating thumbnail art") between `"script"` and `"voice"`.
 
-## Iteration 3: Voice Parameter Restructuring + Gemini Integration
+**4c. Thumbnail generation:**
+After script completes, fire 3 parallel requests to `/api/gemini/thumbnail` (one per style) via `Promise.allSettled`. Map failures to `null` so partial success still works.
 
-PR#2 adds `script-to-voice.ts` which calls Gemini's TTS API (`gemini-2.5-flash-preview-tts`) with a hardcoded voice name (`'Kore'`). Restructure UI voice parameters to map to Gemini's voices, pick 5 for gaming commentary, and prepare the integration path so the hardcoded voice becomes dynamic.
+**4d. Build results with real data:**
+Construct `VideoResult[]` with `thumbnailUrl` (data URI from base64) and `videoUrl` (blob URL from sessionStorage). Fall back to color placeholders if thumbnails failed.
 
-### Selected Gemini Voices (5)
+**4e. Fix `buildCharacterProfile`:**
+Lines 65-66 reference dead `character.voiceSample` / `character.voiceWeight`. Replace with `character.voice`.
 
-| Voice | Gemini Descriptor | Maps to current | Why |
-|---|---|---|---|
-| **Puck** | Upbeat | High Energy | energetic commentary for highlights |
-| **Algenib** | Gravelly | Deep & Gravelly | dramatic/intense gameplay moments |
-| **Algieba** | Smooth | Smooth & Clean | polished, professional narration |
-| **Zubenelgenubi** | Casual | Laid Back | relaxed, conversational commentary |
-| **Sulafat** | Warm | NEW (5th) | friendly, approachable tone |
+## 5. Rewrite VideoCard for reel style
 
-**Demo pair** (2 to fully integrate): **Puck** + **Algenib** — maximum contrast for demo impact.
+**File:** `ui/components/VideoCard.tsx`
 
-### Parameter Changes
+- **Aspect ratio:** `aspect-[9/16]` (vertical reel)
+- **`<video>` element:** `src={videoUrl}`, `muted`, `loop`, `playsInline`, `object-cover`
+- **Thumbnail poster:** `<img>` with `thumbnailUrl` over the video; falls back to colored div
+- **Play/pause:** Click toggles play; hover shows semi-transparent play button overlay
+- **Download:** Programmatic `<a>` click with blob URL + `download` attribute
 
-**Voice (was "Voice Sample") — 5 options**
+UX details:
+- Videos muted (autoplay policy + prevents chaos with 3 cards)
+- Videos loop (reel aesthetic)
+- `object-cover` crops 16:9 gameplay into 9:16 frame (center crop, acceptable for demo)
+- Play icon overlay fades in on hover, fades out on play
 
-Rename from "Voice Sample" to "Voice". Labels use Gemini's own descriptors:
+## 6. Update results page layout
 
-```ts
-export const VOICE_OPTIONS = [
-  { id: "upbeat", label: "Upbeat", geminiVoice: "Puck" },
-  { id: "gravelly", label: "Gravelly", geminiVoice: "Algenib" },
-  { id: "smooth", label: "Smooth", geminiVoice: "Algieba" },
-  { id: "casual", label: "Casual", geminiVoice: "Zubenelgenubi" },
-  { id: "warm", label: "Warm", geminiVoice: "Sulafat" },
-] as const;
-```
+**File:** `ui/app/results/page.tsx`
 
-**Personality — keep 4 options as-is**
+- Replace `grid gap-6 sm:grid-cols-2 lg:grid-cols-3` with centered flex row
+- Each card constrained to `max-w-[240px]` (~427px tall for 9:16 area)
+- Mobile: stack vertically. Desktop: 3 side by side
+- Update subtitle: "3 AI-generated commentary samples, ready to watch."
 
-Personality controls *what* the AI says (script generation prompt tone), not *how* it sounds:
-- Sarcastic, Funny, Rude, Chill
+## Known Limitations (acceptable for hackathon)
 
-Mapped to text prompt prefixes at generation time.
+- **Blob URL breaks on hard refresh** — the URL string survives in sessionStorage but the underlying blob is garbage-collected. Within a single SPA session (upload -> character -> results), this works fine.
+- **Video is center-cropped** — 16:9 gameplay in a 9:16 frame crops the sides. Acceptable since all 3 are the same content and it matches reel aesthetics.
+- **Thumbnail generation can fail** — graceful fallback to colored divs via `Promise.allSettled`.
 
-**Voice Weight slider — DROP**
-
-Gemini TTS has no pitch/speed parameter. Remove the slider, its state, and its component entirely.
-
-### Files to Change
-
-| File | Change |
-|---|---|
-| `ui/lib/types.ts` | Update `Character.voiceSample` → `Character.voice` with union type of 5 IDs; remove `voiceWeight` |
-| `ui/lib/constants.ts` | Replace `VOICE_SAMPLES` with `VOICE_OPTIONS` (5 entries + `geminiVoice` field) |
-| `ui/components/VoiceSamplePicker.tsx` | Rename to `VoicePicker.tsx`, update to 5 items, new layout |
-| `ui/components/CharacterModal.tsx` | Update state from `voiceSample` → `voice`, remove slider state + import |
-| `ui/lib/storage.ts` | Migration: remap old `voiceSample` values to new `voice` IDs for existing characters |
-| `ui/lib/voice-map.ts` | **New** — `resolveGeminiVoice(voiceId)` returns Gemini voice name string |
-| `ui/components/VoiceSlider.tsx` | **Delete** |
-
-### Integration with PR#2
-
-When PR#2 merges, `script-to-voice.ts` needs:
-
-1. Accept `voiceName` as parameter instead of hardcoded `'Kore'`
-2. Accept `personality` for tone prefix in the text prompt
-3. The API boundary (`ui/lib/api.ts`) passes `{ voiceName, personality, script }` to the backend
-
-```
-Character.voice ("upbeat")
-  → resolveGeminiVoice("upbeat")
-  → "Puck"
-  → script-to-voice.ts voiceName param
-```
-
-For the 2 demo voices (Puck + Algenib), wire the full pipeline. The other 3 are configured in the UI and mapping but won't have tested audio output until more voices are integrated.
-
-### Verification
+## Verification
 
 1. `npm run build` passes
-2. Character modal shows 5 voice options with new labels
-3. Creating a character saves the new `voice` field correctly
-4. Existing characters with old `voiceSample` values migrate cleanly
-5. `resolveGeminiVoice()` returns correct Gemini voice name for all 5 IDs
-6. Voice Weight slider is gone from the modal
+2. Upload a video; verify blob URL stored in sessionStorage
+3. Loading overlay shows 5 steps (analyze, script, thumbnails, voice, assemble)
+4. 3 different-style 9:16 thumbnails appear
+5. Thumbnail fallback works when API key is broken (colored divs)
+6. Click a card — gameplay plays inside 9:16 frame
+7. Click again — pauses, thumbnail reappears
+8. Download button triggers file save dialog
+9. Desktop: 3 vertical cards side by side. Mobile: stacked
+10. No base64 data in localStorage (only sessionStorage + React state)
