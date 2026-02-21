@@ -15,6 +15,8 @@ export interface VideoResult {
   title: string;
   thumbnailColor: string;
   label: string;
+  thumbnailUrl?: string;
+  videoUrl?: string;
 }
 
 export interface GenerationStep {
